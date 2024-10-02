@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +61,9 @@ import androidx.compose.ui.unit.dp
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val viewmodel by viewModels<DemoViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -68,9 +72,32 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = { FloatingActionButtonComposable() }
                 ) { innerPadding ->
-                    CardListComposable(modifier = Modifier.padding(innerPadding))
+                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ChangeBgWithVM(viewModel: DemoViewModel, modifier: Modifier = Modifier) {
+    val bgColor = viewModel.bgColor
+    val colorName = if(viewModel.bgColor == Color.Gray) "Gray" else "Dark Gray"
+    var isClicked by remember {
+        mutableStateOf(false)
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bgColor)
+    ) {
+        Text(text = "Current color is $colorName")
+        Spacer(modifier = Modifier.size(12.dp))
+        Button(onClick = {
+            isClicked = !isClicked
+            viewModel.changeBgColor(isClicked)
+        }) {
+            Text(text = "Change Color")
         }
     }
 }
