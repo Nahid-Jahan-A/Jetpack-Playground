@@ -61,9 +61,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -92,17 +94,39 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+const val DETAILS_ARGUMENT_KEY = "id"
+const val DETAILS_ARGUMENT_KEY2 = "Name"
+
 sealed class Screen(val route: String) {
-    object Home : Screen("home_screen")
-    object Details : Screen("details_screen")
-    object About : Screen("about_screen")
+    data object Home : Screen("home_screen")
+    data object Details : Screen("details_screen?id={$DETAILS_ARGUMENT_KEY}") {
+        fun passId(id: Int = 0): String = "details_screen?id=$id"
+    }
+
+    data object About : Screen("about_screen")
 }
 
 @Composable
 fun SetUpNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route
+    ) {
         composable(Screen.Home.route) { HomeScreen(navController = navController) }
-        composable(Screen.Details.route) { DetailsScreen(navController = navController) }
+        composable(
+            route = Screen.Details.route,
+            arguments = listOf(
+                navArgument(name = DETAILS_ARGUMENT_KEY) {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+//                navArgument(name = DETAILS_ARGUMENT_KEY2) {
+//                    type = NavType.StringType
+//                }
+            )) {
+            Log.d("Args", "SetUpNavGraph: ${it.arguments?.getInt(DETAILS_ARGUMENT_KEY).toString()}")
+            DetailsScreen(navController = navController)
+        }
         composable(Screen.About.route) { AboutScreen(navController = navController) }
     }
 }
@@ -135,7 +159,11 @@ fun HomeScreen(navController: NavController) {
                 fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
             )
             Spacer(modifier = Modifier.size(15.dp))
-            Button(onClick = { navController.navigate(Screen.Details.route) }) {
+            Button(onClick = {
+                navController.navigate(
+                    route = Screen.Details.passId()
+                )
+            }) {
                 Text(text = "Go to Details Screen")
             }
         }
@@ -160,19 +188,23 @@ fun DetailsScreen(navController: NavController) {
                 fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
             )
             Spacer(modifier = Modifier.size(15.dp))
-            Button(onClick = { navController.navigate(Screen.About.route) {
-                popUpTo(Screen.About.route) {
-                    inclusive = true
+            Button(onClick = {
+                navController.navigate(Screen.About.route) {
+                    popUpTo(Screen.About.route) {
+                        inclusive = true
+                    }
                 }
-            } }) {
+            }) {
                 Text(text = "Go to About Screen")
             }
             Spacer(modifier = Modifier.size(15.dp))
-            Button(onClick = { navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Home.route) {
-                    inclusive = true
+            Button(onClick = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Home.route) {
+                        inclusive = true
+                    }
                 }
-            } }) {
+            }) {
                 Text(text = "Go back to Home Screen")
             }
         }
