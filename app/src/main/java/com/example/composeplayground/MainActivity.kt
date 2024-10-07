@@ -35,6 +35,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
@@ -58,9 +59,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var navController: NavHostController
 
     private val viewmodel by viewModels<DemoViewModel>()
 
@@ -72,17 +80,141 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     floatingActionButton = { FloatingActionButtonComposable() }
                 ) { innerPadding ->
-                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
+                    navController = rememberNavController()
+//                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
+                    SetUpNavGraph(
+                        navController = navController,
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
     }
 }
 
+sealed class Screen(val route: String) {
+    object Home : Screen("home_screen")
+    object Details : Screen("details_screen")
+    object About : Screen("about_screen")
+}
+
+@Composable
+fun SetUpNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(navController = navController, startDestination = Screen.Home.route) {
+        composable(Screen.Home.route) { HomeScreen(navController = navController) }
+        composable(Screen.Details.route) { DetailsScreen(navController = navController) }
+        composable(Screen.About.route) { AboutScreen(navController = navController) }
+    }
+}
+
+@Composable
+fun NavigationComposable(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "first_screen") {
+        composable("first_screen") { HomeScreen(navController = navController) }
+        composable("second_screen") { DetailsScreen(navController = navController) }
+    }
+
+}
+
+@Composable
+fun HomeScreen(navController: NavController) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "This is Home Screen",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
+            )
+            Spacer(modifier = Modifier.size(15.dp))
+            Button(onClick = { navController.navigate(Screen.Details.route) }) {
+                Text(text = "Go to Details Screen")
+            }
+        }
+
+    }
+}
+
+@Composable
+fun DetailsScreen(navController: NavController) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "This is Details Screen",
+                color = Color.Red,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
+            )
+            Spacer(modifier = Modifier.size(15.dp))
+            Button(onClick = { navController.navigate(Screen.About.route) {
+                popUpTo(Screen.About.route) {
+                    inclusive = true
+                }
+            } }) {
+                Text(text = "Go to About Screen")
+            }
+            Spacer(modifier = Modifier.size(15.dp))
+            Button(onClick = { navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Home.route) {
+                    inclusive = true
+                }
+            } }) {
+                Text(text = "Go back to Home Screen")
+            }
+        }
+
+    }
+}
+
+@Composable
+fun AboutScreen(navController: NavController) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "This is About Screen",
+                color = Color.Red,
+                fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                fontWeight = MaterialTheme.typography.headlineLarge.fontWeight
+            )
+            Spacer(modifier = Modifier.size(15.dp))
+            Button(onClick = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Home.route) {
+                        inclusive = true
+                    }
+                }
+            }) {
+                Text(text = "Go to Next Screen")
+            }
+        }
+
+    }
+}
+
 @Composable
 fun ChangeBgWithVM(viewModel: DemoViewModel, modifier: Modifier = Modifier) {
     val bgColor = viewModel.bgColor
-    val colorName = if(viewModel.bgColor == Color.Gray) "Gray" else "Dark Gray"
+    val colorName = if (viewModel.bgColor == Color.Gray) "Gray" else "Dark Gray"
     var isClicked by remember {
         mutableStateOf(false)
     }
