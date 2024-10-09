@@ -8,15 +8,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -30,15 +35,19 @@ import androidx.compose.material.icons.rounded.AccountBox
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -46,19 +55,25 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -67,6 +82,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
+import com.example.composeplayground.R
 
 class MainActivity : ComponentActivity() {
 
@@ -84,13 +100,186 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     navController = rememberNavController()
 //                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
-                    SetUpNavGraph(
-                        navController = navController,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+//                    SetUpNavGraph(
+//                        navController = navController,
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
+                    TopScreenSection(name = "From Video Player", modifier = Modifier.padding(innerPadding))
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
+    val likeCount = remember { mutableIntStateOf(1) }
+    val liked = remember { mutableStateOf(false) }
+    val disliked = remember { mutableStateOf(false) }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.3f)
+                .background(Color.Black)
+                .align(Alignment.CenterHorizontally),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Hello $name!",
+                style = TextStyle(background = Color.White),
+                modifier = modifier
+            )
+        }
+        Spacer(modifier = Modifier.size(10.dp))
+        Box(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Column {
+                Text(
+                    text = "Content Title Text",
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.size(10.dp))
+                Text(
+                    text = "38.5K views",
+                    style = TextStyle(fontSize = 12.sp, color = colorResource(R.color.grey_600))
+                )
+                Spacer(modifier = Modifier.size(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(80.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .background(colorResource(R.color.grey_200), shape = CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AccountBox,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                        Spacer(modifier = Modifier.size(5.dp))
+                        Column (
+                            modifier = Modifier.size(180.dp, 40.dp),
+                            verticalArrangement = Arrangement.Center
+                        ){
+                            Text(
+                                text = "Rokomari.com",
+                                style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(115.dp, 40.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                    ) {
+                        Text(text = "Subscribe")
+                    }
+                }
+                Row {
+                    Surface(
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(150.dp)
+                            .clip(CircleShape),
+                        shape = CircleShape,
+                        color = colorResource(R.color.grey_200),
+                        shadowElevation = 4.dp
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            // Like Button
+                            Icon(
+                                painter = painterResource(id = if (liked.value) R.drawable.ic_like_filled else R.drawable.ic_like),
+                                contentDescription = "Like",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        if (!liked.value) {
+                                            liked.value = true
+                                            disliked.value = false
+                                            likeCount.value += 1
+                                        } else {
+                                            liked.value = false
+                                            likeCount.value -= 1
+                                        }
+                                    },
+                            )
+
+                            // Like Count Text
+                            Text(
+                                text = "${likeCount.intValue}K",
+                                color = Color.Black,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+
+                            // Vertical Separator
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.6f)
+                                    .width(1.dp)
+                                    .background(Color.Gray)
+                            )
+
+                            // Dislike Button
+                            Icon(
+                                painter = painterResource(id = if (disliked.value) R.drawable.ic_dislike_filled else R.drawable.ic_dislike),
+                                contentDescription = "Dislike",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        if (!disliked.value && likeCount.intValue > 0) {
+                                            disliked.value = true
+                                            liked.value = false
+                                            likeCount.value -= 1
+                                        } else {
+                                            disliked.value = false
+                                            likeCount.value += 1
+                                        }
+                                    },
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Button(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(115.dp, 40.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorResource(R.color.grey_200),
+                            contentColor = Color.Black
+                        ),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_share),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.size(5.dp))
+                        Text(text = "Share")
+                    }
+                }
+            }
+        }
+        Text("Comments")
     }
 }
 
@@ -212,6 +401,7 @@ fun DetailsScreen(navController: NavController) {
     }
 }
 
+
 @Composable
 fun AboutScreen(navController: NavController) {
     Box(
@@ -236,7 +426,7 @@ fun AboutScreen(navController: NavController) {
                     }
                 }
             }) {
-                Text(text = "Go to Next Screen")
+                Text(text = "Go Back to Home Screen")
             }
         }
 
