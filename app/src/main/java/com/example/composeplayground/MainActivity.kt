@@ -2,6 +2,7 @@ package com.example.composeplayground
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,11 +37,10 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +55,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,7 +81,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
-import com.example.composeplayground.R
 
 class MainActivity : ComponentActivity() {
 
@@ -96,7 +94,7 @@ class MainActivity : ComponentActivity() {
             ComposePlaygroundTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    floatingActionButton = { FloatingActionButtonComposable() }
+//                    floatingActionButton = { FloatingActionButtonComposable() }
                 ) { innerPadding ->
                     navController = rememberNavController()
 //                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
@@ -113,7 +111,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
-    val likeCount = remember { mutableIntStateOf(1) }
+    val likeCount = remember { mutableIntStateOf(10) }
     val liked = remember { mutableStateOf(false) }
     val disliked = remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -196,7 +194,7 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                     Surface(
                         modifier = Modifier
                             .height(40.dp)
-                            .width(150.dp)
+                            .width(140.dp)
                             .clip(CircleShape),
                         shape = CircleShape,
                         color = colorResource(R.color.grey_200),
@@ -204,15 +202,14 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
                         ) {
-                            // Like Button
-                            Icon(
-                                painter = painterResource(id = if (liked.value) R.drawable.ic_like_filled else R.drawable.ic_like),
-                                contentDescription = "Like",
+                            // Like Section
+                            Row(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .weight(1.5f)
+                                    .fillMaxHeight()
                                     .clickable {
                                         if (!liked.value) {
                                             liked.value = true
@@ -223,14 +220,20 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                                             likeCount.value -= 1
                                         }
                                     },
-                            )
-
-                            // Like Count Text
-                            Text(
-                                text = "${likeCount.intValue}K",
-                                color = Color.Black,
-                                modifier = Modifier.padding(start = 4.dp)
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = if (liked.value) R.drawable.ic_like_filled else R.drawable.ic_like),
+                                    contentDescription = "Like",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "${likeCount.intValue}K",
+                                    color = Color.Black,
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
+                            }
 
                             // Vertical Separator
                             Box(
@@ -240,12 +243,12 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                                     .background(Color.Gray)
                             )
 
-                            // Dislike Button
-                            Icon(
-                                painter = painterResource(id = if (disliked.value) R.drawable.ic_dislike_filled else R.drawable.ic_dislike),
-                                contentDescription = "Dislike",
+                            // Dislike Section
+                            Row(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .fillMaxWidth()
                                     .clickable {
                                         if (!disliked.value && likeCount.intValue > 0) {
                                             disliked.value = true
@@ -256,7 +259,15 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                                             likeCount.value += 1
                                         }
                                     },
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = if (disliked.value) R.drawable.ic_dislike_filled else R.drawable.ic_dislike),
+                                    contentDescription = "Dislike",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.size(10.dp))
@@ -277,9 +288,50 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                         Text(text = "Share")
                     }
                 }
+
             }
         }
-        Text("Comments")
+        Text(
+            modifier = Modifier.padding(12.dp),
+            text = "Comments",
+            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        )
+        Box(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            LazyColumn {
+                items(50) { count ->
+                    CommentCard(count+1)
+                    Spacer(modifier = Modifier.size(10.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CommentCard(count: Int) {
+    Box {
+        Row {
+            Box(
+                modifier = Modifier
+                    .size(25.dp)
+                    .background(colorResource(R.color.grey_400), shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AccountBox,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .align(Alignment.Center)
+                )
+            }
+            Spacer(modifier = Modifier.size(5.dp))
+            Column {
+                Text(text = "@RokomariOfficial", style = TextStyle(fontSize = 12.sp, color = colorResource(R.color.grey_600)))
+                Text(text = "This is a very good comment! $count")
+            }
+        }
     }
 }
 
