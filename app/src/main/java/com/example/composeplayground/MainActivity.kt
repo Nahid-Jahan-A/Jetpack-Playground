@@ -205,7 +205,7 @@ fun PlayListItems(playlistTitle: String, imageUrl: String, count: Int) {
                 modifier = Modifier
                     .size(120.dp, 40.dp)
                     .offset(y = (-15).dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(5.dp))
                     .background(colorResource(R.color.grey_400)),
                 contentAlignment = Alignment.Center
             ) {
