@@ -183,7 +183,7 @@ fun PlaylistsTabContent() {
     val videoPlayLists = getFakeVideos()
     LazyColumn {
         items(videoPlayLists.size) { index ->
-            PlayListItems(videoPlayLists[index].title, videoPlayLists[index].highThumbnailUrl, index)
+            PlayListItems(videoPlayLists[index].title, videoPlayLists[index].highThumbnailUrl, index+1)
         }
     }
 }
