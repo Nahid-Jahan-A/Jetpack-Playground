@@ -2,7 +2,6 @@ package com.example.composeplayground
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Space
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -37,7 +38,6 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
@@ -50,6 +50,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -70,6 +74,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,6 +85,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.composeplayground.data.dataSource.local.getFakeChannel
+import com.example.composeplayground.data.dataSource.local.getFakeVideos
 import com.example.composeplayground.ui.theme.ComposePlaygroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -96,21 +105,328 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
 //                    floatingActionButton = { FloatingActionButtonComposable() }
                 ) { innerPadding ->
-                    navController = rememberNavController()
+//                    navController = rememberNavController()
 //                    ChangeBgWithVM(viewmodel, modifier = Modifier.padding(innerPadding))
 //                    SetUpNavGraph(
 //                        navController = navController,
 //                        modifier = Modifier.padding(innerPadding)
 //                    )
-                    TopScreenSection(name = "From Video Player", modifier = Modifier.padding(innerPadding))
+//                    VideoActivityScreen(name = "From Video Player", modifier = Modifier.padding(innerPadding))
+
+                    ChannelActivityScreen(modifier = Modifier.padding(innerPadding))
+
                 }
             }
         }
     }
 }
 
+
 @Composable
-fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
+fun ChannelTabs() {
+    val tabTitles = listOf("Videos", "Playlists")
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+    Column {
+        // Tab Row for Tabs
+        Box(
+            modifier = Modifier.fillMaxWidth(0.5f)
+        ) {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                contentColor = colorResource(R.color.black),
+                divider = {
+                    colorResource(R.color.red_500)
+                },
+                indicator = { tabPositions ->
+                    TabRowDefaults.PrimaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        color = colorResource(R.color.red_500)
+                    )
+                }
+            ) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title) }
+                    )
+                }
+            }
+        }
+
+        // Tab content
+        when (selectedTabIndex) {
+            0 -> VideosTabContent()
+            1 -> PlaylistsTabContent()
+        }
+    }
+}
+
+@Composable
+fun VideosTabContent() {
+    val videos = getFakeVideos()
+    LazyColumn {
+        items(videos.size) { index ->
+            VideoItem(
+                videoTitle = videos[index].title,
+                views = "${index * 2}K views",
+                duration = "2:$index",
+                imageUrl = videos[index].highThumbnailUrl
+            )
+        }
+    }
+}
+
+@Composable
+fun PlaylistsTabContent() {
+    val videoPlayLists = getFakeVideos()
+    LazyColumn {
+        items(videoPlayLists.size) { index ->
+            PlayListItems(videoPlayLists[index].title, videoPlayLists[index].highThumbnailUrl, index)
+        }
+    }
+}
+
+@Composable
+fun PlayListItems(playlistTitle: String, imageUrl: String, count: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(130.dp, 75.dp)
+                .clip(shape = RoundedCornerShape(8.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp, 40.dp)
+                    .offset(y = (-15).dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colorResource(R.color.grey_400)),
+                contentAlignment = Alignment.Center
+            ) {
+            }
+            Box (
+                modifier = Modifier
+                    .size(130.dp, 70.dp)
+                    .padding(top = 5.dp)
+                    .clip(shape = RoundedCornerShape(5.dp))
+                    .background(Color.Gray)
+            ) {
+                // Load image from URL using Coil
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .background(Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 4.dp)  // Inner padding for the content
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Icon (e.g., a playlist icon)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_filter),  // Replace with your actual icon resource
+                            contentDescription = "Playlist Icon",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        // Number (e.g., count of items in the playlist)
+                        Text(
+                            text = count.toString(),
+                            color = Color.White,
+                            style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        )
+                    }
+                }
+            }
+
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = playlistTitle,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+
+}
+
+@Composable
+fun VideoItem(videoTitle: String, views: String, duration: String, imageUrl: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        // Thumbnail (using a placeholder here)
+        Box(
+            modifier = Modifier
+                .size(130.dp, 70.dp)
+                .clip(shape = RoundedCornerShape(5.dp))
+                .background(Color.Gray)
+        ) {
+            // Load image from URL using Coil
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // Display the duration text at the bottom right
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(4.dp)
+                    .background(
+                        colorResource(R.color.black).copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = duration,
+                    color = Color.White,
+                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                )
+            }
+
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = videoTitle,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = views, style = TextStyle(color = Color.Gray))
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun ChannelActivityScreen(modifier: Modifier = Modifier) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column {
+            ChannelActivityHeader()
+            TabView()
+        }
+    }
+}
+
+@Composable
+fun ChannelActivityHeader(modifier: Modifier = Modifier) {
+    val channelInfo = getFakeChannel()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.25f)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(top = 30.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(colorResource(R.color.grey_400), shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AccountBox,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+                Spacer(modifier = Modifier.size(10.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight(0.5f)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = channelInfo.title,
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(
+                            text = channelInfo.customUrl,
+                            style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(
+                            text = channelInfo.subscriberCount.toString(),
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                color = colorResource(R.color.grey_600)
+                            )
+                        )
+                    }
+                }
+            }
+            Button(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.grey_300),
+                    contentColor = Color.Black
+                )
+            ) {
+                Text(text = if (channelInfo.subscribed) "Unsubscribed" else "Subscribe")
+            }
+        }
+    }
+}
+
+@Composable
+fun VideoActivityScreen(name: String, modifier: Modifier = Modifier) {
     val likeCount = remember { mutableIntStateOf(10) }
     val liked = remember { mutableStateOf(false) }
     val disliked = remember { mutableStateOf(false) }
@@ -150,7 +466,7 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                         .height(80.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row (
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
                             .height(80.dp),
@@ -169,10 +485,10 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
                             )
                         }
                         Spacer(modifier = Modifier.size(5.dp))
-                        Column (
+                        Column(
                             modifier = Modifier.size(180.dp, 40.dp),
                             verticalArrangement = Arrangement.Center
-                        ){
+                        ) {
                             Text(
                                 text = "Rokomari.com",
                                 style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold)
@@ -301,7 +617,7 @@ fun TopScreenSection(name: String, modifier: Modifier = Modifier) {
         ) {
             LazyColumn {
                 items(50) { count ->
-                    CommentCard(count+1)
+                    CommentCard(count + 1)
                     Spacer(modifier = Modifier.size(10.dp))
                 }
             }
@@ -328,7 +644,10 @@ fun CommentCard(count: Int) {
             }
             Spacer(modifier = Modifier.size(5.dp))
             Column {
-                Text(text = "@RokomariOfficial", style = TextStyle(fontSize = 12.sp, color = colorResource(R.color.grey_600)))
+                Text(
+                    text = "@RokomariOfficial",
+                    style = TextStyle(fontSize = 12.sp, color = colorResource(R.color.grey_600))
+                )
                 Text(text = "This is a very good comment! $count")
             }
         }
@@ -364,7 +683,8 @@ fun SetUpNavGraph(navController: NavHostController, modifier: Modifier = Modifie
 //                navArgument(name = DETAILS_ARGUMENT_KEY2) {
 //                    type = NavType.StringType
 //                }
-            )) {
+            )
+        ) {
             Log.d("Args", "SetUpNavGraph: ${it.arguments?.getInt(DETAILS_ARGUMENT_KEY).toString()}")
             DetailsScreen(navController = navController)
         }
@@ -741,7 +1061,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-@Preview(showBackground = true)
 @Composable
 fun MyComposablePreview() {
     ComposePlaygroundTheme {
